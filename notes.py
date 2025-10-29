@@ -16,7 +16,7 @@ entits = {}
 for i, token in enumerate(nlp(text).ents):
     entits[token.text] = token.label_
 print("".join((entits.keys())), "".join(entits.values()))
-print(entits)
+print(str(entits))
 
 # for EN
 # when checking QUESTION similarity, tolerance: >0.9

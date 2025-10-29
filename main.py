@@ -2,11 +2,11 @@
 from numpy import cos, ma
 import spacy
 import sqlite3
-#from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer, util
 import numpy
 
-#model = SentenceTransformer('gtr-t5-base')
-#nlp = spacy.load('en_core_web_lg')
+model = SentenceTransformer('gtr-t5-base')
+nlp = spacy.load('en_core_web_lg')
 
 
 DB_FILE_NAME = ""
@@ -14,7 +14,7 @@ QUESTION_TOLERANCE = 0.9
 ANSWER_TOLERANCE = 0.70
 QUESTION_MAX_LENGTH = 50
 ANSWER_MAX_LENGTH = 12
-ENTITIES_TOLERANCE =
+ENTITIES_TOLERANCE = 0.75
 
 # Created DB connection
 db_conn = sqlite3.connect("db.db")
@@ -35,7 +35,7 @@ def lemmaText():
     pass
 
 #
-def newEntry(table:str, args:dict):
+def newEntry(table:str, args):
     try:
         keys = ", ".join(args.keys())
         placeholders = ", ".join("?" for _ in args)
@@ -45,7 +45,7 @@ def newEntry(table:str, args:dict):
         db_conn.commit()
         return
     except Exception as e:
-        print(f"exception: {e}")
+        print(f"newEntry exception: {e}")
 
 #
 def loadAllEntries(table):
@@ -79,7 +79,7 @@ def questionMode():
     n_rows = loadAllEntries("note")
 
     q_ents = {}
-    for i, token in enumerate(nlp(q).ents):
+    for token in nlp(q).ents:
         q_ents[token.text] = token.label_
 
 
@@ -97,13 +97,18 @@ def questionMode():
     a = input("Please enlighten me.. What is the answer?")
 
     a_ents = {}
-        for i, token in enumerate(nlp(a).ents):
-            a_ents[token.text] = token.label_
+    for token in nlp(a).ents:
+        a_ents[token.text] = token.label_
 
-    newEntry("answer",{"id":a_rows[-1][0]+1,"text":a, "entities":a_ents})
+    newEntry("answer",{"id":a_rows[-1][0]+1,"text":a, "entities":str(a_ents)})
     n = input("Could you add any additional info to that?\nIt would be beneficial for future learning and others!\n: ")
-    newEntry("note",{"id":n_rows[-1][0]+1,"text":q})
-    newEntry("question",{"id":q_rows[-1][0]+1,"answer_id":a_rows[-1][0]+1, "note_id":n_rows[-1][0]+1, "text":q, "entities":q_ents})
+
+    n_ents = {}
+    for token in nlp(n).ents:
+        n_ents[token.text] = token.label_
+
+    newEntry("note",{"id":n_rows[-1][0]+1,"text":n, "entities":str(n_ents)})
+    newEntry("question",{"id":q_rows[-1][0]+1,"answer_id":a_rows[-1][0]+1, "note_id":n_rows[-1][0]+1, "text":q, "entities":str(q_ents)})
 
 
 def main():
@@ -115,7 +120,7 @@ def main():
             questionMode()
 
     except Exception as e:
-        print(f"exception: {e}")
+        print(f"main exception: {e}")
 
 
 if __name__ == "__main__":
