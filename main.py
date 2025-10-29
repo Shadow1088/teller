@@ -69,15 +69,21 @@ def questionMode():
     qs = [q_rows[i][1] for i in range(len(q_rows))]
     qs.append(q)
 
+    a_rows = loadAllEntries("answer")
+
     embeddings = model.encode(qs, convert_to_tensor=True)
     cosine_scores = util.cos_sim(embeddings, embeddings)
     matrix = cosine_scores.tolist()
     for i, sc in enumerate(matrix):
         if sc[-1] > QUESTION_TOLERANCE and i != (len(qs)-1):
             print("I know this!")
-            break
-        else:
-            print("hmm...")
+            for j, a_row in enumerate(a_rows):
+               if a_row[0] == q_rows[i][3]:
+                   print(a_row[1])
+                   return
+    print("I do not carry this knowledge.")
+    a = input("Please enlighten me.. What is the answer?")
+
 
 
 def main():
