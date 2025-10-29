@@ -3,14 +3,20 @@ from sentence_transformers import SentenceTransformer, util
 
 
 nlp = spacy.load('en_core_web_lg')
-text = "I'm the greatest technician widely."
+text = "I'm the greatest technician widely since 1980"
 #print(text)
 
 tokens = [token.text for token in nlp(text)]
 #print(tokens)
 
 lemmas = [token.lemma_ for token in nlp(text)]
-#print(lemmas)
+print(" ".join(lemmas))
+
+entits = {}
+for i, token in enumerate(nlp(text).ents):
+    entits[token.text] = token.label_
+print("".join((entits.keys())), "".join(entits.values()))
+print(entits)
 
 # for EN
 # when checking QUESTION similarity, tolerance: >0.9
