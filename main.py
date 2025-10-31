@@ -83,29 +83,35 @@ def questionMode():
     embeddings = model.encode(qs, convert_to_tensor=True)
     cosine_scores = util.cos_sim(embeddings, embeddings)
     matrix = cosine_scores.tolist()
+
+    q_max = [0,0]
     for i, sc in enumerate(matrix):
         if sc[-1] > QUESTION_TOLERANCE and i != (len(qs)-1):
-            print("I know this!")
-            for j, a_row in enumerate(a_rows):
-               if a_row[0] == q_rows[i][3]:
-                   print(a_row[1])
-                   return
-    print("I do not carry this knowledge.")
-    a = input("Please enlighten me.. What is the answer?\n: ")
+            if sc[-1] > q_max[1]:
+                q_max = [i, sc[-1]]
+    if q_max[-1] > 0:
+        print("I know this!")
+        for a_row in a_rows:
+            if a_row[0] == q_rows[q_max[0]][3]:
+                print(a_row[1])
+                return
+    else:
+        print("I do not carry this knowledge.")
+        a = input("Please enlighten me.. What is the answer?\n: ")
 
-    a_ents = {}
-    for token in nlp(a).ents:
-        a_ents[token.text] = token.label_
+        a_ents = {}
+        for token in nlp(a).ents:
+            a_ents[token.text] = token.label_
 
-    newEntry("answer",{"id":a_rows[-1][0]+1,"text":a, "entities":str(a_ents)})
-    n = input("Could you add any additional info to that?\nIt would be beneficial for future learning and others!\n: ")
+        newEntry("answer",{"id":a_rows[-1][0]+1,"text":a, "entities":str(a_ents)})
+        n = input("Could you add any additional info to that?\nIt would be beneficial for future learning and others!\n: ")
 
-    n_ents = {}
-    for token in nlp(n).ents:
-        n_ents[token.text] = token.label_
+        n_ents = {}
+        for token in nlp(n).ents:
+            n_ents[token.text] = token.label_
 
-    newEntry("note",{"id":n_rows[-1][0]+1,"text":n, "entities":str(n_ents)})
-    newEntry("question",{"id":q_rows[-1][0]+1,"answer_id":a_rows[-1][0]+1, "note_id":n_rows[-1][0]+1, "text":q, "entities":str(q_ents)})
+        newEntry("note",{"id":n_rows[-1][0]+1,"text":n, "entities":str(n_ents)})
+        newEntry("question",{"id":q_rows[-1][0]+1,"answer_id":a_rows[-1][0]+1, "note_id":n_rows[-1][0]+1, "text":q, "entities":str(q_ents)})
 
 #
 def testMode():
@@ -149,7 +155,7 @@ def testMode():
                             print("The answer was: " + a_row[1])
 
             q_rows.pop(index)
-
+    return
 
 def main():
     try:
